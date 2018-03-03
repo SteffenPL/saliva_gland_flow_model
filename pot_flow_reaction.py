@@ -11,7 +11,7 @@ For the concentrations we
 from fenics import *
 
 # Parameters
-waterInFlux = 0.4
+waterInFlux = 10.0
 
 # reaction coefficients
 
@@ -54,7 +54,7 @@ dx = Measure('dx', domain=mesh, subdomain_data=domains)
 ds = Measure('ds', domain=mesh, subdomain_data=boundaries)
 
 # Define function space and basis functions
-V = FunctionSpace(mesh, "CG", 2)
+V = FunctionSpace(mesh, "P", 1)
 phi = TrialFunction(V)  # potential
 v  = TestFunction(V)
 
@@ -113,10 +113,13 @@ v_na = TestFunction(V)
 v_k  = TestFunction(V)
 
 n = FacetNormal(mesh)
-F_steady = inner(0.01*grad(cl),grad(v_cl))*dx + inner(cl*grad(phi),grad(v_cl))*dx - inner(grad(phi),n)*v_cl*cl*ds - f_cl*v_cl*dx - 2.*v_cl*dx(1)
+F_steady = inner(0.01*grad(cl),grad(v_cl))*dx \
+         + inner(cl*grad(phi),grad(v_cl))*dx \
+         - inner(grad(phi),n)*v_cl*cl*ds \
+         - f_cl*v_cl*dx - 2.*v_cl*dx(1)
 
 # Boundary conditions
-bcs = [DirichletBC(V, 0.0, boundaries, 1)]
+bcs = [] #DirichletBC(V, 0.0, boundaries, 1)]
 
 # Separate left and right hand sides of equation
 a_1, L_1 = lhs(F_steady), rhs(F_steady)
@@ -129,4 +132,53 @@ solve(a_1 == L_1, cl, bcs)
 output = File("/tmp/res_cl.pvd")
 output<<cl
 
+
+# Time dependen case
+
+# parameters
+dt = 0.1
+t_end = 2.
+
+
+cl_init = Function(V)
+cl_init.assign(cl)
+
+clInFlux = 0.01
+f_cl = Constant(clInFlux)
+
+# Define variational problem
+cl = TrialFunction(V)
+v_cl = TestFunction(V)
+
+n = FacetNormal(mesh)
+F_dyn = cl*v_cl*dx \
+      + (dt*inner(0.01*grad(cl),grad(v_cl))*dx \
+      + dt*inner(cl*grad(phi),grad(v_cl))*dx \
+      - dt*inner(grad(phi),n)*v_cl*cl*ds \
+      - dt*f_cl*v_cl*dx)
+
+a,L = lhs(F_dyn),rhs(F_dyn)
+
+A = assemble(a)
+l = assemble(L)
+
+# Boundary conditions
+bcs = [] #DirichletBC(V, 0.0, boundaries, 1)]
+
+# Compute solution
+cl = Function(V)
+output = File("/tmp/res_cl_dyn.pvd")
+t = 0
+
+while( t < t_end ):
+    t += dt
+
+    l_2 = assemble(cl_init*v_cl*dx)
+    #solve( a==L , cl , bcs )
+    solve(A,cl.vector(),l+l_2)
+
+    cl_init.assign(cl)
+    print(t)
+
+    output<<cl,t
 
