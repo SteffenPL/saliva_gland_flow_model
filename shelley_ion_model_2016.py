@@ -7,6 +7,7 @@ Created on Mon Mar  5 16:38:58 2018
 """
 
 from sympy import *
+#from sympy.physics import units as u
 
 init_printing(use_latex=True)
 F = symbols('F')
@@ -32,6 +33,8 @@ na_C, cl_C, k_C, h_C, hco3_C, co2_C = symbols('[Na^{+}]_C,\
                             [H^{+}]_C,\
                             [HCO_3^{-}]_C\
                             [CO_2]_C')
+
+
 
 con_A = [na_A,cl_A,k_A,h_A,hco3_A]
 con_B = [na_B,cl_B,k_B,h_B,hco3_B]
@@ -201,4 +204,8 @@ rhs_h_a = J_buf_A + J_NHE_A
 rhs_hco3_a = F*w_A*(J_buf_A + J_AE2_A - J_NBC_A) - I_CFTR_B
 rhs_co2_a = -J_buf_A + J_CDF_A + J_CDF_P
 
+rhs_expr = [rhs_kirchhoff_A,rhs_kirchhoff_B,rhs_na_c,rhs_cl_c,
+            rhs_k_c,rhs_h_c,rhs_hco3_c,rhs_co2_c,rhs_na_a,rhs_cl_a,
+            rhs_k_a,rhs_h_a,rhs_hco3_a,rhs_co2_a]
 
+for
