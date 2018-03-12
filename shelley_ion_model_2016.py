@@ -74,9 +74,9 @@ J_w_A, J_w_B = symbols('J^w_A, J^w_B')
 L_A, L_B, V_W = symbols('L_A, L_B, V_W')
 chi_C, Psi = symbols('\\chi_C, \\Psi^{-}')
 
-rhs_w_c = A*(J_w_B - J_w_A)
 J_w_A = L_A*V_W*( sum(con_A)-sum(con_C) + ( -chi_C/w_C + Psi ))
 J_w_B = L_B*V_W*( sum(con_C)-sum(con_B) + ( chi_C/w_C ))
+rhs_w_c = A*(J_w_B - J_w_A)
 
 # ionic currents
 G_CFTR, alpha_CFTR = symbols('G_{CFTR}, \\alpha_{CFTR}')
@@ -204,8 +204,10 @@ rhs_h_a = J_buf_A + J_NHE_A
 rhs_hco3_a = F*w_A*(J_buf_A + J_AE2_A - J_NBC_A) - I_CFTR_B
 rhs_co2_a = -J_buf_A + J_CDF_A + J_CDF_P
 
-rhs_expr = [rhs_kirchhoff_A,rhs_kirchhoff_B,rhs_na_c,rhs_cl_c,
+rhs_expr = [rhs_w_c,rhs_kirchhoff_A,rhs_kirchhoff_B,rhs_na_c,rhs_cl_c,
             rhs_k_c,rhs_h_c,rhs_hco3_c,rhs_co2_c,rhs_na_a,rhs_cl_a,
             rhs_k_a,rhs_h_a,rhs_hco3_a,rhs_co2_a]
 
-for
+
+for rhs in rhs_expr:
+    display(rhs)
