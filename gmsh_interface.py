@@ -39,7 +39,7 @@ class GmshInterface:
     def get_parameters(self, key: str) -> float:
         return self.parameters[key]
 
-    def generate_msh(self, fn_output: str = None, lc: float = None):
+    def generate_msh(self, fn_output: str = None, lc: float = None, replace = False):
 
         if fn_output is None:
             fn_output = self.fn.replace(".geo",".msh")
@@ -48,7 +48,7 @@ class GmshInterface:
             fn_output = fn_output + ".msh"
 
 
-        if not os.path.isfile(fn_output):
+        if not os.path.isfile(fn_output) or replace:
 
             if lc is not None:
                 self.set_parameter("lc",lc)
@@ -71,14 +71,15 @@ class GmshInterface:
             f_tmp.close()
             subprocess.call(["gmsh","-" + str(self.dim),f_tmp.name,"-o",fn_output])
 
-    def generate_xml(self, fn_output: str = None,  lc: float = None):
+    def generate_xml(self, fn_output: str = None,  lc: float = None, replace = False):
         if ".xml" not in fn_output:
             fn_output = fn_output + ".xml"
 
-        if not os.path.isfile(fn_output):
+        if not os.path.isfile(fn_output) or replace:
             fn_msh = fn_output.replace(".xml",".msh")
-            self.generate_msh(fn_msh)
+            self.generate_msh(fn_msh, lc=lc, replace=replace)
 
+            print("Call dolfin-convert:\n")
             subprocess.call([self.dolfin_convert_exec,fn_msh,fn_output])
 
 

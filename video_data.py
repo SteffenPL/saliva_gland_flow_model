@@ -63,8 +63,6 @@ class VideoData(Expression):
                 if i >= self.nframes:
                     i = 2*self.nframes - i
 
-            print(i)
-
             if 0 <= i < self.nframes:
                 self.frame = i
 
