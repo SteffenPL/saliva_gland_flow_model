@@ -296,9 +296,9 @@ class DuctState:
 
         print(video)
 
-        dt = 0.1
+        dt = 0.05
         t = 0.
-        t_end = 10.
+        t_end = 20.
 
         u_init = Function(V)
         (u_cl, u_k) = TrialFunction(V)
@@ -502,12 +502,12 @@ def demo_video_complex():
 
     #rk = comm_mpi4py.Get_rank()
     #if rk == 0:
-    g = GmshInterface("geo/movie_1.geo", dim=2)
-    g.generate_xml("geo/movie_1.xml",lc=1.,replace=False)
+    g = GmshInterface("geo/movie_2.geo", dim=2)
+    g.generate_xml("geo/movie_2.xml",lc=1.,replace=False)
 
     #comm_mpi4py.Barrier()
 
-    d.load_mesh("geo/movie_1.xml")
+    d.load_mesh("geo/movie_2.xml")
     d.boundary_fnc = lambda x: x[0] > -5. and x[1] < 5.
     fe.plot(d.mesh)
     plt.show()
@@ -519,7 +519,7 @@ def demo_video_complex():
     plt.show()
     d.load_video("video_data/ach12.mp4")
 
-    d.compute_conv_diff_reac_video(video_ref=[0,0],video_size=[100.,70.])
+    d.compute_conv_diff_reac_video(video_ref=[0,0],video_size=[99.,69.])
 
 
 if __name__ == "__main__":
