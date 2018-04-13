@@ -30,7 +30,7 @@ class Units:
 
 # helper functions
 def chem_reaction_ex(p1, p2, p3, p4, k1, k2, k_1, k_2):
-    return (k1*k2*p1*p2 - k_1*k_2*p3*p4)/(k1*p1+k2*p2+k_1*p4+k_2*p3)
+    return (k1*k2*p1*p2 - k_1*k_2*p3*p4)/(k1*p1 + k2*p2 + k_1*p4 + k_2*p3)
 
 
 def chem_reaction_ex_2(p1, p2, p3, p4, k1, k2, k_1, k_2):
@@ -68,20 +68,20 @@ class shelley_model:
         #s.active_channels['BK'] = True
         #s.active_channels['IK1'] = True
         #s.active_channels['CDF'] = True
-        s.active_channels['NHE'] = True
+        #s.active_channels['NHE'] = True
 
         s.active_buffers = {
                 'CO2' : True
                 }
 
         # Intersitial compartment
-        s.na_B = 140.7 * Units.mM
+        s.na_B = 1.7 * Units.mM
         s.cl_B = 125. * Units.mM
-        s.k_B = 5 * Units.mM
+        s.k_B = 35 * Units.mM
         s.pH = 7.2
         s.hco3_B = 42.9 * Units.mM
         s.co2_B = 1.28 * Units.mM
-        s.h_B = 10**(-s.pH) * 1e3 * Units.mM
+        s.h_B = 10.**(-s.pH) * 1e3 * Units.mM
 
         # TODO: adjust diameter according to speed
 
@@ -457,6 +457,14 @@ class shelley_model:
             s.J_NHE_B = s.alpha_NHE_B * chem_reaction_ex(s.na_B, h_C, na_C, s.h_B,
                                                      s.k1, s.k2, s.k_1, s.k_2)
 
+            test_denominator = na_A*s.k1 + h_C*s.k2 + na_C*s.k_2 + h_A*s.k_1
+            if test_denominator < 0:
+                print("Warning: Negative denominator!")
+
+            test_denominator = s.na_B * s.k1 + h_C * s.k2 + na_C * s.k_2 + s.h_B * s.k_1
+            if test_denominator < 0:
+                print("Warning: Negative denominator in J_NHE_B!")
+
             s.rhs_na_C += s.J_NHE_A + s.J_NHE_B
             s.rhs_na_A -= s.J_NHE_A
 
@@ -529,7 +537,6 @@ class shelley_model:
         # s.test_A = s.I_ENaC + s.I_na_P + s.I_CFTR + s.I_cl_P + s.I_BK + s.I_k_P + s.I_CFTR_B
         # s.test_B = -s.F*w_C*s.J_NKA_B - (s.I_na_P + s.I_cl_P + s.I_k_P) + s.I_IK1
 
-
         s.rhs_w_c = s.Area*(s.J_w_B - s.J_w_A)
 
         # product rule (to convert the change in mass into change in concentrations)
@@ -540,12 +547,12 @@ class shelley_model:
 
         s.rhs = nda.algopy.zeros(shape=(13,),dtype=x[0])
         s.rhs[0] = s.rhs_w_C
-        s.rhs[1] = s.rhs_na_C
-        s.rhs[2] = s.rhs_cl_C
-        s.rhs[3] = s.rhs_k_C
-        s.rhs[4] = s.rhs_h_C
-        s.rhs[5] = s.rhs_hco3_C
-        s.rhs[6] = s.rhs_co2_C
+        #s.rhs[1] = s.rhs_na_C
+        #s.rhs[2] = s.rhs_cl_C
+        #s.rhs[3] = s.rhs_k_C
+        #s.rhs[4] = s.rhs_h_C
+        #s.rhs[5] = s.rhs_hco3_C
+        #s.rhs[6] = s.rhs_co2_C
         s.rhs[7] = s.rhs_na_A
         s.rhs[8] = s.rhs_cl_A
         s.rhs[9] = s.rhs_k_A
@@ -553,14 +560,11 @@ class shelley_model:
         s.rhs[11] = s.rhs_hco3_A
         s.rhs[12] = s.rhs_co2_A
 
-
-
         if not auto_diff:
             if np.any(np.isnan(s.rhs)):
                 return np.zeros(shape=(13,))
 
         return s.rhs
-
 
     def plot_state(s):
         x = [ chem + region for chem in range(0,6) for region in [0,0.2,0.4] ]
@@ -572,7 +576,6 @@ class shelley_model:
         plt.xticks( np.arange(0,6) , names )
 
         plt.show()
-
 
 
     def plot_change(s):

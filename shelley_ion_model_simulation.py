@@ -28,14 +28,14 @@ mM = Units.mM
 
 # initial conditions
 w_C = 2.090 * Units.w_dimless
-na_A = 141.6 * mM
-na_C = 141.6 * mM
+na_A = 121.6 * mM
+na_C = 121.6 * mM
 cl_A = 112.6 * mM
-cl_C = 112.6 * mM
+cl_C = 152.6 * mM
 k_A = 35.6 * mM
 k_C = 35.6 * mM
-h_A = 10**(-7.2) * 1e3 * mM
-h_C = 10**(-7.2) * 1e3 * mM
+h_A = 10.**(-s.pH) * 1e3 * mM
+h_C = 10.**(-s.pH) * 1e3 * mM
 hco3_A = 42.9 * mM
 hco3_C = 42.9 * mM
 co2_A = 1.288 * mM
@@ -54,16 +54,18 @@ ode_jac = nda.Jacobian(s.ode, method='forward')
 
 
 t0 = 0
-t_bound = 0.1
+t_bound = 10e4
 
-ode = Radau( lambda t,x: s.ode(x), y0 = x_0, t0 = t0, t_bound = t_bound, jac = lambda t,x: ode_jac(x) )
+ode = BDF( lambda t,x: s.ode(x), y0 = x_0, t0 = t0, t_bound = t_bound, jac = lambda t,x: ode_jac(x) )
 
 T = np.array([t0])
 Y = np.array(x_0)
 Y = Y[:,np.newaxis]
 
+F = np.array(s.ode(x_0))
+F = F[:, np.newaxis]
 
-#ode.max_step = 1e-7
+#ode.max_step = 1e-4
 
 
 while ode.t < t_bound:
@@ -80,6 +82,7 @@ while ode.t < t_bound:
     Y = np.append(Y,ode.y[:,np.newaxis],axis=1)
     x_cur = ode.y
 
+    F = np.append(F, np.array(s.ode(ode.y))[:, np.newaxis], axis=1)
 
 #y = solve_ivp(lambda t, x: s.ode(x), t_span, x_0,method='BDF',jac=lambda t,x: ode_jac(x))
 #print("Result: %s" % y.message )
@@ -101,6 +104,21 @@ plt.show()
 
 for i in range(7,13):
     plt.plot(T,Y[i][:],color=cols[i-7],label='$'+s.names[i]+'$')
+
+
+plt.legend(loc=2, ncol=3, borderaxespad=0.)
+plt.show()
+
+
+for i in range(1,7):
+    plt.plot(T,F[i][:],color=cols[i-7],label='$'+s.names[i]+'$')
+
+
+plt.legend(loc=2, ncol=3, borderaxespad=0.)
+plt.show()
+
+for i in range(7,13):
+    plt.plot(T,F[i][:],color=cols[i-7],label='$'+s.names[i]+'$')
 
 
 plt.legend(loc=2, ncol=3, borderaxespad=0.)
